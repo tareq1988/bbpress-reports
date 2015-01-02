@@ -1,0 +1,80 @@
+.bbp-reports {
+  position: relative;
+}
+.bbp-reports .clearfix:before,
+.bbp-reports .clearfix:after {
+  content: " ";
+  display: table;
+}
+.bbp-reports .clearfix:after {
+  clear: both;
+}
+.bbp-reports * {
+  box-sizing: border-box;
+}
+.bbp-reports h2.nav-tab-wrapper {
+  margin-bottom: 15px;
+}
+.bbp-reports .filter-area {
+  position: absolute;
+  top: 10px;
+  right: 90px;
+}
+.bbp-reports .filter-area form {
+  float: right;
+}
+.bbp-reports .filter-area form input[type=text] {
+  width: 90px;
+}
+.bbp-reports .chart-sidebar {
+  float: left;
+  width: 40%;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e5e5e5;
+  background: #fff;
+}
+.bbp-reports .chart-sidebar ul.chart-legend {
+  padding: 0;
+  margin: 0;
+}
+.bbp-reports .chart-sidebar li {
+  float: left;
+  width: 50%;
+  padding: 25px;
+  margin: 0;
+  text-align: center;
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #eee;
+  color: #aaa;
+}
+.bbp-reports .chart-sidebar strong {
+  display: block;
+  font-size: 30px;
+  line-height: 60px;
+  color: #464646;
+  font-weight: 400;
+  font-family: HelveticaNeue-Light, "Helvetica Neue Light", "Helvetica Neue", sans-serif;
+}
+.bbp-reports .chart-main {
+  width: 60%;
+  float: left;
+  padding-left: 20px;
+}
+.bbp-reports .chart-main .postbox h3.hndle {
+  font-size: 14px;
+  padding: 8px 12px;
+  margin: 0;
+  line-height: 1.4;
+}
+.bbp-reports .chart-main .postbox h3.hndle span {
+  float: right;
+  font-weight: normal;
+  color: #aaa;
+}
+.bbp-reports .chart-main table.widefat thead tr th {
+  font-size: 12px;
+  font-weight: 400;
+}
+.bbp-reports .chart-main table.widefat tbody th {
+  border-right: 1px solid #eee;
+}
