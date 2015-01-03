@@ -44,21 +44,19 @@ class WeDevs_bbPress_Reporting {
         $timestamp  = current_time( 'timestamp' );
         $cur_year   = date( 'Y', $timestamp );
         $cur_month  = date( 'm', $timestamp );
-        $no_of_days = cal_days_in_month( CAL_GREGORIAN, $cur_month, $cur_year );
         $start_date = isset( $_GET['bbp_report_start'] ) ? sanitize_text_field( $_GET['bbp_report_start'] ) : date( 'Y-m-01', $timestamp );
-        $end_date   = isset( $_GET['bbp_report_end'] ) ? sanitize_text_field( $_GET['bbp_report_end'] ) : date( 'Y-m-' . $no_of_days, $timestamp );
+        $end_date   = isset( $_GET['bbp_report_end'] ) ? sanitize_text_field( $_GET['bbp_report_end'] ) : date( 'Y-m-d', $timestamp );
         $date_diff  = ( strtotime( $end_date ) - strtotime( $start_date ) ) / DAY_IN_SECONDS;
-        $table_name = $wpdb->prefix . 'bbp_reports';
 
         $topic_created_query = "SELECT count(p.ID) as num
             FROM $wpdb->posts AS p
-            WHERE p.post_type = 'topic' AND
+            WHERE p.post_type = 'topic' AND p.post_status IN ( 'publish', 'close' ) AND
                 (p.post_date >= '$start_date' AND p.post_date <= '$end_date') ";
 
         $active_conversation_query = "SELECT count(p.ID) as num
             FROM $wpdb->posts AS p
             LEFT JOIN $wpdb->postmeta AS m1 ON m1.post_id = p.ID
-            WHERE p.post_type = 'topic' AND m1.meta_key = '_bbp_last_active_time' AND
+            WHERE p.post_type = 'topic' AND m1.meta_key = '_bbp_last_active_time' AND p.post_status IN ( 'publish', 'close' ) AND
                 ( (p.post_date >= '$start_date' AND p.post_date <= '$end_date') OR ( m1.meta_value >= '$start_date' AND m1.meta_value <= '$end_date' ) )
             ORDER BY m1.meta_value ASC";
 
@@ -74,7 +72,6 @@ class WeDevs_bbPress_Reporting {
         $topic_created       = (int) $wpdb->get_var( $topic_created_query );
         $active_conversation = (int) $wpdb->get_var( $active_conversation_query );
         $topic_replies       = $wpdb->get_results( $topic_replies_query );
-        // var_dump($topic_replies);
 
         $user_count = array_unique( wp_list_pluck( $topic_replies, 'post_author' ) );
         $fills = array(
@@ -144,7 +141,7 @@ class WeDevs_bbPress_Reporting {
         arsort( $day_count );
         arsort( $fills );
         $day_count_flip = array_flip( $day_count );
-        $fills_flip = array_flip( $fills );
+        $fills_flip     = array_flip( $fills );
         ?>
 
         <div class="chart-container clearfix">
@@ -250,10 +247,8 @@ class WeDevs_bbPress_Reporting {
         $timestamp  = current_time( 'timestamp' );
         $cur_year   = date( 'Y', $timestamp );
         $cur_month  = date( 'm', $timestamp );
-        $no_of_days = cal_days_in_month( CAL_GREGORIAN, $cur_month, $cur_year );
         $start_date = isset( $_GET['bbp_report_start'] ) ? sanitize_text_field( $_GET['bbp_report_start'] ) : date( 'Y-m-01', $timestamp );
-        $end_date   = isset( $_GET['bbp_report_end'] ) ? sanitize_text_field( $_GET['bbp_report_end'] ) : date( 'Y-m-' . $no_of_days, $timestamp );
-
+        $end_date   = isset( $_GET['bbp_report_end'] ) ? sanitize_text_field( $_GET['bbp_report_end'] ) : date( 'Y-m-d', $timestamp );
 
         if ( isset( $_GET['user_id'] ) ) {
             $user_id = intval( $_GET['user_id'] );
