@@ -7,6 +7,15 @@
  */
 class WeDevs_bbPress_Reporting {
 
+    /**
+     * Shows the date filter range form
+     *
+     * @param  string  the start date
+     * @param  string  the end date
+     * @param  string  current tab slug
+     *
+     * @return void
+     */
     public static function date_filter( $start_date, $end_date, $tab ) {
         ?>
         <div class="filter-area clearfix">
@@ -24,6 +33,11 @@ class WeDevs_bbPress_Reporting {
         <?php
     }
 
+    /**
+     * Conversation tab report
+     *
+     * @return void
+     */
     public static function conversation() {
         global $wpdb;
 
@@ -225,6 +239,11 @@ class WeDevs_bbPress_Reporting {
         <?php
     }
 
+    /**
+     * Team tab reports
+     *
+     * @return void
+     */
     public static function report_team() {
         global $wpdb;
 
@@ -234,10 +253,7 @@ class WeDevs_bbPress_Reporting {
         $no_of_days = cal_days_in_month( CAL_GREGORIAN, $cur_month, $cur_year );
         $start_date = isset( $_GET['bbp_report_start'] ) ? sanitize_text_field( $_GET['bbp_report_start'] ) : date( 'Y-m-01', $timestamp );
         $end_date   = isset( $_GET['bbp_report_end'] ) ? sanitize_text_field( $_GET['bbp_report_end'] ) : date( 'Y-m-' . $no_of_days, $timestamp );
-        $table_name = $wpdb->prefix . 'bbp_reports';
 
-        // $start_date = '2014-11-01';
-        // $end_date = '2014-11-30';
 
         if ( isset( $_GET['user_id'] ) ) {
             $user_id = intval( $_GET['user_id'] );
@@ -245,6 +261,7 @@ class WeDevs_bbPress_Reporting {
             self::report_user( $user_id, $start_date, $end_date );
             return;
         }
+
         // get mdoerators
         $administrators = get_users( array( 'role' => 'administrator' ) );
         $keymaster      = get_users( array( 'role' => 'bbp_keymaster' ) );
@@ -252,19 +269,19 @@ class WeDevs_bbPress_Reporting {
 
         $all_users = array_merge( $administrators, $keymaster, $moderators );
         $all_users = array_unique( wp_list_pluck( $all_users, 'ID' ) );
-        // var_dump( $all_users );
 
-        $query = "SELECT COUNT(*) as count, u.ID, p.post_author, u.display_name
+        $query = $wpdb->prepare( "SELECT COUNT(*) as count, u.ID, p.post_author, u.display_name
             FROM $wpdb->posts AS p
             INNER JOIN $wpdb->users AS u ON u.ID = p.post_author
             WHERE post_author IN (" . implode( ',', $all_users ) . ") AND post_type = 'reply' AND
-            ( post_date >= '$start_date' AND post_date <= '$end_date' ) AND post_status in ('publish', 'closed' )
+            ( post_date >= %s AND post_date <= %s ) AND post_status in ('publish', 'closed' )
             GROUP BY p.post_author
-            ORDER BY count DESC";
+            ORDER BY count DESC", $start_date, $end_date );
 
         $users = $wpdb->get_results( $query );
+
+        self::date_filter( $start_date, $end_date, 'team' );
         ?>
-        <?php self::date_filter( $start_date, $end_date, 'team' ); ?>
 
         <table class="widefat">
             <thead>
@@ -308,6 +325,14 @@ class WeDevs_bbPress_Reporting {
         <?php
     }
 
+    /**
+     * Count a users post type
+     *
+     * @param  int  the user id
+     * @param  string  post type name
+     *
+     * @return int  post count
+     */
     public static function count_user_posts_by_type( $user_id, $post_type = 'post' ) {
         global $wpdb;
 
@@ -318,6 +343,40 @@ class WeDevs_bbPress_Reporting {
         return apply_filters( 'get_usernumposts', $count, $user_id );
     }
 
+    /**
+     * Get the topic status
+     *
+     * @param  int  topic id
+     *
+     * @return string  the status name
+     */
+    public static function get_topic_status( $topic_id ){
+        $status = (int) get_post_meta( $topic_id, '_bbps_topic_status', true );
+
+        switch($status){
+            case 1:
+                return __( 'Not Resolved', 'bbp-reports' );
+                break;
+            case 2:
+                return __( 'Resolved', 'bbp-reports' );
+                break;
+            case 3:
+                return __( 'Not Support Question', 'bbp-reports' );
+                break;
+            default:
+                return '-';
+                break;
+        }
+    }
+    /**
+     * Print report for an individual user
+     *
+     * @param  int  user id
+     * @param  string  start date
+     * @param  string  end date
+     *
+     * @return void
+     */
     public static function report_user( $user_id, $start_date, $end_date ) {
         global $wpdb;
 
@@ -325,20 +384,108 @@ class WeDevs_bbPress_Reporting {
 
         $user = get_user_by( 'id', $user_id );
 
-        $sql = "SELECT ID, post_author, post_parent
+        $sql = $wpdb->prepare( "SELECT p.post_author, p.post_parent as topic_id,
+                p.ID as reply_ID, t.post_date AS topic_date, p.post_date as first_reply,
+                count(p.ID) as replies,
+                m2.meta_value as last_active, m3.meta_value as voice_count
             FROM $wpdb->posts AS p
-            WHERE p.post_type = 'reply' AND p.post_author = $user_id AND
-            ( p.post_date >= '$start_date' AND p.post_date <= '$end_date' )
-        ";
-        echo $sql;
+            LEFT JOIN $wpdb->posts AS t ON t.ID = p.post_parent
+            LEFT JOIN $wpdb->postmeta AS m2 ON p.post_parent = m2.post_id
+            LEFT JOIN $wpdb->postmeta AS m3 ON p.post_parent = m3.post_id
+            WHERE p.post_type = 'reply' AND p.post_author = %d AND
+                ( p.post_date >= %s AND p.post_date <= %s ) AND
+                p.post_status IN ('publish', 'closed' ) AND
+                m2.meta_key = '_bbp_last_active_time' AND
+                m3.meta_key = '_bbp_voice_count'
+            GROUP BY p.post_parent
+            ORDER BY p.ID DESC", $user_id, $start_date, $end_date );
 
         $replies = $wpdb->get_results( $sql );
-        var_dump( $replies );
         ?>
 
-        <?php echo get_avatar( $user_id, '80' ); ?>
-        <?php echo $user->display_name; ?>
-        <?php printf( __( 'Total replies: %d', 'bbp-reports' ), self::count_user_posts_by_type( $user_id, 'reply' ) ); ?>
+        <div class="user-info-wrap clearfix">
+            <div class="user-avatar">
+                <?php echo get_avatar( $user_id, '80' ); ?>
+            </div>
+
+            <div class="user-info">
+                <ul>
+                    <li><h3><?php echo $user->display_name; ?></h3></li>
+                    <li><?php printf( __( 'Total replies: %d', 'bbp-reports' ), self::count_user_posts_by_type( $user_id, 'reply' ) ); ?></li>
+                    <li class="sep"><strong><?php _e( 'Current Date Range:', 'bbp-reports' ); ?></strong></li>
+                    <li><?php printf( __( 'Topic Handled: %d', 'bbp-reports' ), count( $replies ) ); ?></li>
+                    <li><?php printf( __( 'Replies Made: %d', 'bbp-reports' ), array_sum( wp_list_pluck( $replies, 'replies' ) ) ); ?></li>
+                </ul>
+            </div>
+        </div>
+
+        <table class="widefat">
+            <thead>
+                <tr>
+                    <th><?php _e( 'Topic', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Topic Created', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'First Response In', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Replies Made', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Voices', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Last Active', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Status', 'bbp-reports' ); ?></th>
+                </tr>
+            </thead>
+
+            <tfoot>
+                <tr>
+                    <th><?php _e( 'Topic', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Topic Created', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'First Response In', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Replies Made', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Voices', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Last Active', 'bbp-reports' ); ?></th>
+                    <th><?php _e( 'Status', 'bbp-reports' ); ?></th>
+                </tr>
+            </tfoot>
+
+            <tbody>
+                <?php
+                if ( $replies ) {
+                    foreach ($replies as $key => $row) {
+                        $class = ( $key % 2 ) == 0 ? 'alternate' : '';
+                        $class .= ' status-' . $row->resolve_status;
+                        ?>
+                        <tr class="<?php echo $class; ?>">
+                            <td>
+                                <a href="<?php echo bbp_get_topic_permalink( $row->topic_id ); ?>">#<?php echo $row->topic_id; ?> </a>
+                            </td>
+                            <td>
+                                <?php echo bbp_get_time_since( $row->topic_date ); ?>
+                            </td>
+                            <td>
+                                <?php echo str_replace( 'ago', '', bbp_get_time_since( strtotime( $row->topic_date ), strtotime( $row->first_reply ) ) ); ?>
+                            </td>
+                            <td>
+                                <?php echo $row->replies; ?>
+                            </td>
+                            <td>
+                                <?php echo $row->voice_count; ?>
+                            </td>
+
+                            <td>
+                                <a href="<?php echo bbp_topic_last_reply_url( $row->topic_id ); ?>"><?php echo bbp_get_time_since( $row->last_active ); ?></a>
+                            </td>
+
+                            <td>
+                                <?php echo self::get_topic_status( $row->topic_id ); ?>
+                            </td>
+
+                        </tr>
+
+                        <?php
+                    }
+                } else {
+
+                }
+                ?>
+            </tbody>
+        </table>
 
         <?php
     }

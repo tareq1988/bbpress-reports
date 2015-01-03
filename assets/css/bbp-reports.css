@@ -15,6 +15,27 @@
 .bbp-reports h2.nav-tab-wrapper {
   margin-bottom: 15px;
 }
+.bbp-reports .user-info-wrap {
+  margin-bottom: 15px;
+}
+.bbp-reports .user-info-wrap .user-avatar {
+  float: left;
+  width: 100px;
+}
+.bbp-reports .user-info-wrap .user-info {
+  float: left;
+  width: 80%;
+}
+.bbp-reports .user-info-wrap .user-info h3 {
+  margin: 0;
+}
+.bbp-reports .user-info-wrap .user-info ul {
+  margin: 0;
+  padding: 0;
+}
+.bbp-reports .user-info-wrap .user-info ul li.sep {
+  padding-top: 10px;
+}
 .bbp-reports .filter-area {
   position: absolute;
   top: 10px;

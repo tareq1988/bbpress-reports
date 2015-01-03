@@ -1,16 +1,16 @@
 <?php
 /*
 Plugin Name: bbPress Reports
-Plugin URI: http://example.com/
-Description: Description
+Plugin URI: http://wedevs.com/plugins/
+Description: A simple reporting plugin for bbPress
 Version: 0.1
-Author: Your Name
-Author URI: http://example.com/
+Author: Tareq Hasan
+Author URI: http://tareq.wedevs.com/
 License: GPL2
 */
 
 /**
- * Copyright (c) YEAR Your Name (email: Email). All rights reserved.
+ * Copyright (c) 2015 Tareq Hasan (email: tareq@wedevs.com). All rights reserved.
  *
  * Released under the GPL license
  * http://www.opensource.org/licenses/gpl-license.php
@@ -57,9 +57,6 @@ class WeDevs_bbPress_Reports {
      * @uses add_action()
      */
     public function __construct() {
-        register_activation_hook( __FILE__, array( $this, 'activate' ) );
-        register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
-
         $this->includes();
         $this->init_actions();
     }
@@ -81,27 +78,19 @@ class WeDevs_bbPress_Reports {
     }
 
     /**
-     * Placeholder for activation function
+     * Include the required files
      *
-     * Nothing being called here yet.
+     * @return void
      */
-    public function activate() {
-
-    }
-
-    /**
-     * Placeholder for deactivation function
-     *
-     * Nothing being called here yet.
-     */
-    public function deactivate() {
-
-    }
-
     public function includes() {
         require_once dirname( __FILE__ ) . '/includes/class-report.php';
     }
 
+    /**
+     * Initialize the action hooks
+     *
+     * @return void
+     */
     public function init_actions() {
         // Localize our plugin
         add_action( 'init', array( $this, 'localization_setup' ) );
@@ -121,10 +110,20 @@ class WeDevs_bbPress_Reports {
         load_plugin_textdomain( 'bbp-reports', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
     }
 
+    /**
+     * Register the admin menu
+     *
+     * @return void
+     */
     public function admin_menu() {
         add_submenu_page( 'edit.php?post_type=forum', __( 'bbPress Reports', 'bbp-report' ), __( 'Reports', 'bbp-reports' ), 'manage_options', 'bbp-reports', array( $this, 'report_page' ) );
     }
 
+    /**
+     * Render the reports page
+     *
+     * @return void
+     */
     public function report_page() {
         ?>
         <div class="wrap bbp-reports">
@@ -171,7 +170,6 @@ class WeDevs_bbPress_Reports {
      * Allows plugin assets to be loaded.
      *
      * @uses wp_enqueue_script()
-     * @uses wp_localize_script()
      * @uses wp_enqueue_style
      */
     public function enqueue_scripts() {
