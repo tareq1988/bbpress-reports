@@ -175,6 +175,7 @@ class WeDevs_bbPress_Reports {
     public function enqueue_scripts() {
         global $wp_scripts;
 
+        $suffix   = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
         $ui       = $wp_scripts->query('jquery-ui-core');
         $protocol = is_ssl() ? 'https' : 'http';
         $url      = "$protocol://ajax.googleapis.com/ajax/libs/jqueryui/{$ui->ver}/themes/smoothness/jquery-ui.min.css";
@@ -185,7 +186,7 @@ class WeDevs_bbPress_Reports {
         /**
          * All scripts goes here
          */
-        wp_enqueue_script( 'bbp-report-scripts', plugins_url( 'assets/js/script.js', __FILE__ ), array( 'jquery', 'jquery-ui-datepicker' ), false, true );
+        wp_enqueue_script( 'bbp-report-scripts', plugins_url( "assets/js/script$suffix.js", __FILE__ ), array( 'jquery', 'jquery-ui-datepicker' ), false, true );
     }
 
 } // WeDevs_bbPress_Reports
