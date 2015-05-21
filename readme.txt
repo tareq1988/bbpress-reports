@@ -8,13 +8,19 @@ Stable tag: trunk
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A simple plugin to give you insights on your forum
+A reporting tool for bbPress
 
 == Description ==
 
-This is a very simple plugin to unsubscribe from forum topics at once.
+A simple plugin to give you insights on your forum.
 
-[youtube https://www.youtube.com/watch?v=xOPsYeIlu3c]
+- How is your support/moderator team is doing.
+- Number of active topics, new topics per day.
+- Busiest day and time of the week
+- How is your team doing
+- How a particular person is doing
+
+[See Screenshots](https://wordpress.org/plugins/bbpress-reports/screenshots/)
 
 = Author =
 Brought to you by [Tareq Hasan](http://tareq.wedevs.com) from [weDevs](http://wedevs.com)
