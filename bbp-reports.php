@@ -176,12 +176,9 @@ class WeDevs_bbPress_Reports {
         global $wp_scripts;
 
         $suffix   = ( defined('SCRIPT_DEBUG') && SCRIPT_DEBUG ) ? '' : '.min';
-        $ui       = $wp_scripts->query('jquery-ui-core');
-        $protocol = is_ssl() ? 'https' : 'http';
-        $url      = "$protocol://ajax.googleapis.com/ajax/libs/jqueryui/{$ui->ver}/themes/smoothness/jquery-ui.min.css";
 
-        wp_enqueue_style( 'bbp-report-styles', plugins_url( 'assets/css/bbp-reports.css', __FILE__ ), false, date( 'Ymd' ) );
-        wp_enqueue_style('jquery-ui-smoothness', $url );
+        wp_enqueue_style( 'bbp-report-styles', plugins_url( 'assets/css/bbp-reports.css', __FILE__ ) );
+        wp_enqueue_style( 'jquery-ui', plugins_url( 'assets/css/jquery-ui.min.css', __FILE__ ) );
 
         /**
          * All scripts goes here
