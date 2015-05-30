@@ -20,7 +20,7 @@ A simple plugin to give you insights on your forum.
 - How is your team doing
 - How a particular person is doing
 
-[See Screenshots](https://wordpress.org/plugins/bbpress-reports/screenshots/)
+[See Screenshots](https://wordpress.org/plugins/bbpress-reports/screenshots/) | [Fork in Github](https://github.com/tareq1988/bbpress-reports)
 
 = Author =
 Brought to you by [Tareq Hasan](http://tareq.wedevs.com) from [weDevs](http://wedevs.com)
